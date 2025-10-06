@@ -2,48 +2,41 @@ import tkinter as tk
 import serial
 import time
 
-# Configura el puerto (ajustar al tuyo, ej. COM3 en Windows o /dev/ttyUSB0 en Linux)
-arduino = serial.Serial('COM3', 9600, timeout=1)
-time.sleep(2)
+# Ajusta tu puerto: "COM3" en Windows o "/dev/ttyUSB0" en Linux
+PUERTO = "COM3"
+BAUDIOS = 9600
+arduino = None
 
-def horario():
-    arduino.write(b'H')
+def conectar():
+    global arduino
+    try:
+        arduino = serial.Serial(PUERTO, BAUDIOS, timeout=1)
+        time.sleep(2)  # esperar a que Arduino reinicie
+        lbl_estado.config(text=f"Conectado a {PUERTO}")
+    except:
+        lbl_estado.config(text="Error al conectar")
 
-def antihorario():
-    arduino.write(b'A')
+def enviar(cmd):
+    if arduino and arduino.is_open:
+        arduino.write(cmd.encode())
+        lbl_estado.config(text=f"Enviado: {cmd}")
+    else:
+        lbl_estado.config(text="No conectado")
 
-def velocidad_lenta():
-    arduino.write(b'1')
+# --- Interfaz gráfica ---
+ventana = tk.Tk()
+ventana.title("Control Motor Base")
 
-def velocidad_media():
-    arduino.write(b'2')
+tk.Button(ventana, text="Conectar", command=conectar).pack(pady=5)
 
-def velocidad_rapida():
-    arduino.write(b'3')
+tk.Button(ventana, text="Horario", command=lambda: enviar('H')).pack(pady=2)
+tk.Button(ventana, text="Antihorario", command=lambda: enviar('A')).pack(pady=2)
 
-def enviar_pasos():
-    pasos = entry_pasos.get()
-    if pasos.isdigit():  # Verifica que sean números
-        comando = f"P{pasos}\n"   # Agregamos prefijo "P" para diferenciar
-        arduino.write(comando.encode('utf-8'))
+tk.Button(ventana, text="Velocidad 1 (Lenta)", command=lambda: enviar('1')).pack(pady=2)
+tk.Button(ventana, text="Velocidad 2 (Media)", command=lambda: enviar('2')).pack(pady=2)
+tk.Button(ventana, text="Velocidad 3 (Rápida)", command=lambda: enviar('3')).pack(pady=2)
 
-# Interfaz gráfica
-root = tk.Tk()
-root.title("Control Motor a Pasos")
-tk.Label(root, text="Control de Motor a Pasos", font=("Arial", 16)).pack(pady=10)
+lbl_estado = tk.Label(ventana, text="Desconectado")
+lbl_estado.pack(pady=10)
 
-tk.Button(root, text="Horario", command=horario, width=15, height=2).pack(pady=5)
-tk.Button(root, text="Antihorario", command=antihorario, width=15, height=2).pack(pady=5)
-
-tk.Label(root, text="Velocidad").pack(pady=10)
-tk.Button(root, text="Lenta", command=velocidad_lenta).pack(pady=2)
-tk.Button(root, text="Media", command=velocidad_media).pack(pady=2)
-tk.Button(root, text="Rápida", command=velocidad_rapida).pack(pady=2)
-
-# Entrada de pasos
-tk.Label(root, text="Número de pasos:").pack(pady=10)
-entry_pasos = tk.Entry(root)
-entry_pasos.pack(pady=5)
-tk.Button(root, text="Mover", command=enviar_pasos, width=15, height=2).pack(pady=5)
-
-root.mainloop()
+ventana.mainloop()

@@ -1,48 +1,32 @@
 #include <Stepper.h>
 
-const int stepsPerRevolution = 200;  // Ajusta según tu motor
-Stepper myStepper(stepsPerRevolution, 8, 9, 10, 11);
-
-String inputString = "";
-boolean stringComplete = false;
-int velocidad = 60; // default
+const int stepsPerRevolution = 2048; // motor 28BYJ-48
+// Pines del ULN2003 conectados al Arduino
+Stepper motor(stepsPerRevolution, 8, 10, 9, 11);
 
 void setup() {
   Serial.begin(9600);
-  myStepper.setSpeed(velocidad);
+  motor.setSpeed(10);  // velocidad inicial
 }
 
 void loop() {
-  if (stringComplete) {
-    if (inputString.startsWith("P")) {
-      int pasos = inputString.substring(1).toInt();
-      myStepper.step(pasos);
-    } else if (inputString == "H") {
-      myStepper.step(stepsPerRevolution);
-    } else if (inputString == "A") {
-      myStepper.step(-stepsPerRevolution);
-    } else if (inputString == "1") {
-      velocidad = 30;
-      myStepper.setSpeed(velocidad);
-    } else if (inputString == "2") {
-      velocidad = 60;
-      myStepper.setSpeed(velocidad);
-    } else if (inputString == "3") {
-      velocidad = 120;
-      myStepper.setSpeed(velocidad);
-    }
-    inputString = "";
-    stringComplete = false;
-  }
-}
+  if (Serial.available()) {
+    char comando = Serial.read();
 
-void serialEvent() {
-  while (Serial.available()) {
-    char inChar = (char)Serial.read();
-    if (inChar == '\n') {
-      stringComplete = true;
-    } else {
-      inputString += inChar;
+    if (comando == 'H') {
+      motor.step(stepsPerRevolution / 10);  // giro horario
+    }
+    else if (comando == 'A') {
+      motor.step(-stepsPerRevolution / 10); // giro antihorario
+    }
+    else if (comando == '1') {
+      motor.setSpeed(5);  // lento
+    }
+    else if (comando == '2') {
+      motor.setSpeed(10); // medio
+    }
+    else if (comando == '3') {
+      motor.setSpeed(15); // rápido
     }
   }
 }
