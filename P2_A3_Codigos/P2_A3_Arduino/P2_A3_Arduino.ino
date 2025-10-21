@@ -2,8 +2,8 @@
 //Daniel Juárez || Viviana Morin
 
 //variables de las LEDS
-const byte Led1 = 2;
-const byte Led2 = 3;
+const byte Led1 = 12;
+const byte Led2 = 13;
 
 //Variable que recibe instruccion
 char orden;
@@ -18,6 +18,7 @@ void setup() {
 void loop() {
   if (Serial.available()) {
     orden = Serial.read();
+    }
     if (orden == 'A')
     {
       digitalWrite(Led1, HIGH);
