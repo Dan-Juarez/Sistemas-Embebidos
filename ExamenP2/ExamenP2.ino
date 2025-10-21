@@ -1,6 +1,7 @@
-
+//Examen 2° Parcial 
+// Daniel Eduardo Juárez Bañuelos || Viviana Jaqueline Morin Garcia
 // Sistema de seguridad (PIR + Teclado + LCD I2C) con alarma
-// 
+
 
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h>
@@ -13,7 +14,7 @@ const byte PIN_LED_VERDE = 13;
 const byte PIN_BUZZER    = 10;
 
 // ---------- LCD ----------
-LiquidCrystal_I2C lcd(0x27, 16, 2); // cambia a 0x3F si tu módulo lo requiere
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 
 // ---------- TECLADO 4x4 ----------
 const byte FILAS = 4, COLS = 4;
@@ -28,26 +29,28 @@ byte pinesCols[FILAS]   = {6, 7, 8, 9};
 Keypad keypad = Keypad(makeKeymap(teclas), pinesFilas, pinesCols, FILAS, COLS);
 
 // ---------- LÓGICA ----------
-const String PASS = "123A";   // cambia tu PIN aquí
-String ingreso = "";
+const String PASS = "123A";   // CONTRASEÑA SELECCIONADA
+String ingreso = "";          //Lectura de contraseña ingresada por el usuario
 
 bool alarmaArmada    = true;   // sistema armado/desarmado
-bool alarmaDisparada = false;  // sirena activa (latcheada)
+bool alarmaDisparada = false;  // sirena activa
 
 unsigned long tBlink=0, tBeep=0, tSerial=0;
 const unsigned long BLINK_MS=500, BEEP_MS=200, SERIAL_MS=500;
 bool estadoBlink=false, estadoBeep=false;
 
+//Funcion que activa el buzzer
 void beepOn(bool on){ digitalWrite(PIN_BUZZER, on ? HIGH : LOW); }
+//Funcion de control de Leds
 void ledsOff(){ digitalWrite(PIN_LED_ROJO, LOW); digitalWrite(PIN_LED_VERDE, LOW); }
 
 // ---------- LCD ----------
 void lcdHeader() {
   lcd.setCursor(0,0);
   if (!alarmaArmada) {
-    lcd.print("DESARMADA       ");   // 16 chars con espacios para limpiar
+    lcd.print("DESARMADA       ");   
   } else if (alarmaDisparada) {
-    lcd.print("ARMADA  ALERTA  ");   // 2 espacios para que quede claro
+    lcd.print("ARMADA  ALERTA  ");   
   } else {
     lcd.print("ARMADA          ");
   }
@@ -93,7 +96,7 @@ void manejarTeclado() {
         Serial.print(F("[SYS] Estado -> "));
         Serial.println(alarmaArmada ? F("ARMADA") : F("DESARMADA"));
       }
-      // Feedback corto
+      
       lcdHeader();
       lcd.setCursor(0,1); lcd.print("PIN: ");
       lcd.setCursor(5,1); lcd.print("OK  ");
@@ -108,7 +111,7 @@ void manejarTeclado() {
       delay(500);
     }
     ingreso = "";
-    lcdEstadoBase();         // vuelve a mostrar “PIN: ****”
+    lcdEstadoBase();         
     return;
   }
 
@@ -150,7 +153,7 @@ void actualizarSalidas() {
 }
 
 void setup() {
-  pinMode(PIN_PIR, INPUT);        // si tu PIR necesita pull-up: INPUT_PULLUP e inviertes la lógica
+  pinMode(PIN_PIR, INPUT);        
   pinMode(PIN_LED_ROJO, OUTPUT);
   pinMode(PIN_LED_VERDE, OUTPUT);
   pinMode(PIN_BUZZER, OUTPUT);
@@ -169,22 +172,22 @@ void setup() {
 }
 
 void loop() {
-  // 1) Lectura PIR: si ARMADA y detecta -> DISPARA (latch)
+  // 1) Lectura PIR: si ARMADA y detecta -> DISPARA
   int pir = digitalRead(PIN_PIR);
   if (alarmaArmada && pir == HIGH && !alarmaDisparada) {
     alarmaDisparada = true;
     Serial.println(F("[ALARM] Movimiento -> DISPARADA (latch)"));
-    // Mantén línea 2 para PIN
-    lcdHeader();                 // primera línea: "ARMADA  ALERTA"
+    
+    lcdHeader();                 
     lcd.setCursor(0,1); lcd.print("PIN: ");
     mostrarIngreso();
   }
 
-  // 2) Teclado y 3) Salidas
+  
   manejarTeclado();
   actualizarSalidas();
 
-  // 4) Telemetría básica
+  
   if (millis() - tSerial >= SERIAL_MS) {
     tSerial = millis();
     Serial.print(F("[PIR] raw=")); Serial.print(pir);
