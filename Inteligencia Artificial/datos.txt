@@ -1,0 +1,188 @@
+Posiciones para Servos 
+
+Servo 1 (Disco Principal)
+180 Recoge dulce
+90 Analiza 
+0 Cae en Rampa
+Servo 2 (Rampa)
+
+0° Bandeja 1 Amarillo
+30° Bandeja 2 Verde
+60° Bandeja 3 Rojo
+90° Bandeja 4 Naranja
+140° Bandeja 5 Morado Oscuro
+
+
+
+Valores de Morado Oscuro:
+Sistema de separacion de Skittles listo.
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 15873  G: 14492  B: 16666
+Norm -> rN: 0.338  gN: 0.308  bN: 0.354
+Color detectado: DESCONOCIDO (ajusta thresholds)
+Rampa movida a: 0 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 15873  G: 14705  B: 16949
+Norm -> rN: 0.334  gN: 0.309  bN: 0.357
+Color detectado: DESCONOCIDO (ajusta thresholds)
+Rampa movida a: 0 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 16666  G: 15384  B: 17857
+Norm -> rN: 0.334  gN: 0.308  bN: 0.358
+Color detectado: DESCONOCIDO (ajusta thresholds)
+
+Valores para Amarillo:
+Sistema de separacion de Skittles listo.
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 20408  G: 17543  B: 17857
+Norm -> rN: 0.366  gN: 0.314  bN: 0.320
+Color detectado: NARANJA
+Rampa movida a: 90 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 20408  G: 17857  B: 18181
+Norm -> rN: 0.362  gN: 0.316  bN: 0.322
+Color detectado: NARANJA
+Rampa movida a: 90 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 20408  G: 17857  B: 18181
+Norm -> rN: 0.362  gN: 0.316  bN: 0.322
+Color detectado: NARANJA
+
+Valores para el Naranja:
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 19607  G: 16949  B: 19230
+Norm -> rN: 0.351  gN: 0.304  bN: 0.345
+Color detectado: NARANJA
+Rampa movida a: 90 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 19607  G: 15384  B: 17241
+Norm -> rN: 0.375  gN: 0.295  bN: 0.330
+Color detectado: NARANJA
+Rampa movida a: 90 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 19607  G: 15625  B: 17543
+Norm -> rN: 0.372  gN: 0.296  bN: 0.332
+Color detectado: NARANJA
+Rampa movida a: 90 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 22222  G: 15873  B: 17857
+Norm -> rN: 0.397  gN: 0.284  bN: 0.319
+Color detectado: NARANJA
+Rampa movida a: 90 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 19230  G: 15384  B: 17241
+Norm -> rN: 0.371  gN: 0.297  bN: 0.332
+Color detectado: NARANJA
+Rampa movida a: 90 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+
+Valores para el Rojo:
+Sistema de separacion de Skittles listo.
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 16949  G: 14285  B: 16666
+Norm -> rN: 0.354  gN: 0.298  bN: 0.348
+Color detectado: NARANJA
+Rampa movida a: 90 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 17857  G: 15384  B: 17857
+Norm -> rN: 0.349  gN: 0.301  bN: 0.349
+Color detectado: NARANJA
+Rampa movida a: 90 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 17543  G: 15625  B: 17857
+Norm -> rN: 0.344  gN: 0.306  bN: 0.350
+Color detectado: NARANJA
+Rampa movida a: 90 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 17543  G: 15151  B: 19607
+Norm -> rN: 0.335  gN: 0.290  bN: 0.375
+Color detectado: DESCONOCIDO (ajusta thresholds)
+Rampa movida a: 0 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 17543  G: 14705  B: 16949
+Norm -> rN: 0.357  gN: 0.299  bN: 0.345
+Color detectado: NARANJA
+Rampa movida a: 90 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+
+Valores para el Verde:
+Sistema de separacion de Skittles listo.
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 17241  G: 16666  B: 17857
+Norm -> rN: 0.333  gN: 0.322  bN: 0.345
+Color detectado: DESCONOCIDO (ajusta thresholds)
+Rampa movida a: 0 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 17241  G: 16949  B: 18181
+Norm -> rN: 0.329  gN: 0.324  bN: 0.347
+Color detectado: DESCONOCIDO (ajusta thresholds)
+Rampa movida a: 0 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 16666  G: 16393  B: 17241
+Norm -> rN: 0.331  gN: 0.326  bN: 0.343
+Color detectado: DESCONOCIDO (ajusta thresholds)
+Rampa movida a: 0 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 17241  G: 16666  B: 17857
+Norm -> rN: 0.333  gN: 0.322  bN: 0.345
+Color detectado: DESCONOCIDO (ajusta thresholds)
+Rampa movida a: 0 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
+----------------------------
+Disco en POS_RECOGER (180°).
+Disco en POS_SENSOR (90°). Leyendo color...
+Lectura RGB - R: 16666  G: 18181  B: 17543
+Norm -> rN: 0.318  gN: 0.347  bN: 0.335
+Color detectado: DESCONOCIDO (ajusta thresholds)
+Rampa movida a: 0 grados.
+Disco en POS_DESCARGA (0°). Soltando dulce...
