@@ -1,4 +1,4 @@
-# archivo: entrenar_y_servir_modelo.py
+# archivo: ColorSorterIApython_negro.py
 import serial
 import time
 import joblib
@@ -6,64 +6,92 @@ import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 
 # --------------------------------------------------
-# 1) Datos de entrenamiento (ejemplo con tus lecturas)
-#    Formato: [R, G, B], "label"
-#    Puedes agregar MUCHOS más puntos aquí.
+# 1) Datos de entrenamiento (R, G, B, etiqueta)
+#    10 lecturas por color con disco negro
 # --------------------------------------------------
 
 train_data = [
-    # NARANJA (ejemplos que diste)
-    [19607, 16949, 19230, "naranja"],
-    [19607, 15384, 17241, "naranja"],
-    [19607, 15625, 17543, "naranja"],
-    [22222, 15873, 17857, "naranja"],
-    [19230, 15384, 17241, "naranja"],
-
-    # AMARILLO
-    [20408, 17543, 17857, "amarillo"],
-    [20408, 17857, 18181, "amarillo"],
-    [20408, 17857, 18181, "amarillo"],
-
     # MORADO
-    [15873, 14492, 16666, "morado"],
-    [15873, 14705, 16949, "morado"],
-    [16666, 15384, 17857, "morado"],
-
-    # ROJO
-    [16949, 14285, 16666, "rojo"],
-    [17857, 15384, 17857, "rojo"],
-    [17543, 15625, 17857, "rojo"],
-    [17543, 15151, 19607, "rojo"],
-    [17543, 14705, 16949, "rojo"],
+    [3289, 2873, 3412, "morado"],
+    [3311, 2915, 3472, "morado"],
+    [3194, 2857, 3460, "morado"],
+    [3610, 2849, 3389, "morado"],
+    [3367, 2915, 3472, "morado"],
+    [3194, 2793, 3322, "morado"],
+    [3311, 2932, 3412, "morado"],
+    [3174, 2801, 3333, "morado"],
+    [3333, 2932, 3424, "morado"],
+    [3184, 2801, 3333, "morado"],
 
     # VERDE
-    [17241, 16666, 17857, "verde"],
-    [17241, 16949, 18181, "verde"],
-    [16666, 16393, 17241, "verde"],
-    [16666, 18181, 17543, "verde"],
+    [4273, 4273, 3906, "verde"],
+    [3816, 3846, 3802, "verde"],
+    [4219, 4255, 3831, "verde"],
+    [4255, 4385, 3816, "verde"],
+    [4149, 4219, 3846, "verde"],
+    [4115, 4132, 3773, "verde"],
+    [3891, 3816, 3690, "verde"],
+    [4901, 5000, 4184, "verde"],
+    [3846, 3952, 3690, "verde"],
+    [3802, 3816, 3717, "verde"],
+
+    # AMARILLO
+    [7407, 5714, 4347, "amarillo"],
+    [6944, 5291, 4237, "amarillo"],
+    [6944, 5586, 4291, "amarillo"],
+    [7142, 5464, 4329, "amarillo"],
+    [6666, 5208, 4184, "amarillo"],
+    [6756, 5319, 4366, "amarillo"],
+    [7142, 5434, 4310, "amarillo"],
+    [6944, 5347, 4237, "amarillo"],
+    [6993, 5347, 4201, "amarillo"],
+    [6944, 5405, 4347, "amarillo"],
+
+    # ROJO
+    [4672, 3003, 3558, "rojo"],
+    [4149, 2941, 3546, "rojo"],
+    [4273, 2958, 3546, "rojo"],
+    [4629, 3067, 3649, "rojo"],
+    [4032, 3003, 3703, "rojo"],
+    [4608, 3115, 3663, "rojo"],
+    [4424, 3003, 3649, "rojo"],
+    [4405, 2994, 3571, "rojo"],
+    [4694, 3039, 3731, "rojo"],
+    [4608, 3095, 3636, "rojo"],
+
+    # NARANJA
+    [6024, 3597, 3891, "naranja"],
+    [6535, 3663, 3968, "naranja"],
+    [6250, 3571, 3802, "naranja"],
+    [6211, 3703, 3831, "naranja"],
+    [5494, 3355, 3717, "naranja"],
+    [5952, 3508, 3787, "naranja"],
+    [6329, 3584, 3906, "naranja"],
+    [6172, 3571, 3816, "naranja"],
+    [5988, 3412, 3802, "naranja"],
+    [5882, 3436, 3759, "naranja"],
 ]
 
-X = np.array([row[:3] for row in train_data])   # R,G,B
-y = np.array([row[3] for row in train_data])   # etiqueta (string)
+X = np.array([row[:3] for row in train_data], dtype=float)   # R,G,B
+y = np.array([row[3] for row in train_data])                 # etiqueta
 
 # --------------------------------------------------
-# 2) Entrenar modelo KNN
+# 2) Entrenar modelo KNN sobre RGB crudo
 # --------------------------------------------------
-print("Entrenando modelo KNN...")
-model = KNeighborsClassifier(n_neighbors=3)
+print("Entrenando modelo KNN con datos de disco negro (50 muestras)...")
+model = KNeighborsClassifier(n_neighbors=3, weights="distance")
 model.fit(X, y)
 print("Modelo entrenado.")
 
-# Opcional: guardar modelo a disco
-joblib.dump(model, "modelo_skittles.pkl")
-print("Modelo guardado en modelo_skittles.pkl")
+joblib.dump(model, "modelo_skittles_negro.pkl")
+print("Modelo guardado en modelo_skittles_negro.pkl")
 
 # --------------------------------------------------
-# 3) Abrir puerto serie y servir "predicciones"
+# 3) Abrir puerto serie y servir predicciones
 # --------------------------------------------------
 
-# Ajusta el puerto según tu sistema:
-SERIAL_PORT = "COM4" 
+# ⚠ CAMBIA ESTO AL COM CORRECTO
+SERIAL_PORT = "COM4"   # Ejemplo: "COM3", "COM4", etc.
 BAUD_RATE = 9600
 
 print(f"Abriendo puerto serie {SERIAL_PORT}...")
@@ -89,15 +117,14 @@ def label_to_code(label: str) -> str:
         return "M"
     return "?"  # desconocido
 
-while True:
-    try:
+try:
+    while True:
         line = ser.readline().decode("utf-8").strip()
         if not line:
             continue
 
-        # Podemos usar la marca "WAIT_COLOR" para ignorar esa línea
+        # Si usas el mensaje "WAIT_COLOR" desde Arduino, lo puedes ignorar aquí
         if line.startswith("WAIT_COLOR"):
-            # simple log
             print("[Arduino] WAIT_COLOR")
             continue
 
@@ -110,26 +137,25 @@ while True:
                 print("Formato inesperado, se esperaba R,G,B")
                 continue
 
-            R = int(parts[0])
-            G = int(parts[1])
-            B = int(parts[2])
+            R = float(parts[0])
+            G = float(parts[1])
+            B = float(parts[2])
 
         except ValueError:
             print("No se pudo parsear R,G,B")
             continue
 
-        # Hacemos la predicción con el modelo
-        rgb = np.array([[R, G, B]])
-        pred = model.predict(rgb)[0]  # string, ej. "naranja"
+        # Predicción con el modelo
+        rgb = np.array([[R, G, B]], dtype=float)
+        pred = model.predict(rgb)[0]  # ej. "naranja"
         print(f"Prediccion IA: {pred}")
 
-        # Convertimos a código 1 letra y se lo mandamos al Arduino
+        # Convertimos a código 1 letra y lo mandamos al Arduino
         code = label_to_code(pred)
         ser.write((code + "\n").encode("utf-8"))
         print(f"Enviado a Arduino: {code}\n")
 
-    except KeyboardInterrupt:
-        print("Saliendo...")
-        break
+except KeyboardInterrupt:
+    print("Saliendo...")
 
 ser.close()

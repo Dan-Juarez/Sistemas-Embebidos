@@ -20,9 +20,6 @@ const int R_ROJO     = 60;   // Bandeja 3
 const int R_NARANJA  = 90;   // Bandeja 4
 const int R_MORADO   = 140;  // Bandeja 5
 
-// Para llevar el control del ángulo actual del disco
-int anguloDiscoActual = POS_DISCO_DESCARGA;
-
 // --------- Enumeración de colores ---------
 enum ColorDulce {
   COLOR_AMARILLO,
@@ -33,21 +30,44 @@ enum ColorDulce {
   COLOR_DESCONOCIDO
 };
 
-// ------------ Pines TCS3200 (GY-31) ------------
+// --------- Pines TCS3200 (GY-31) ----------
 const int S0_PIN   = 2;
 const int S1_PIN   = 3;
 const int S2_PIN   = 4;
 const int S3_PIN   = 5;
 const int OUT_PIN  = 7;
 
-// --------- Mover suavemente el disco (MG995) ---------
+// Ángulo actual del disco (para movimiento suave)
+int anguloDiscoActual = POS_DISCO_DESCARGA;
+
+// --------- Centroides normalizados rN,gN,bN (con disco negro) ---------
+// Calculados promediando tus 10 lecturas por color
+struct ColorRef {
+  float r;
+  float g;
+  float b;
+  ColorDulce color;
+  const char *name;
+};
+
+ColorRef refs[] = {
+  //                rN       gN       bN
+  {0.4188f, 0.3243f, 0.2568f, COLOR_AMARILLO, "AMARILLO"},
+  {0.3404f, 0.3440f, 0.3156f, COLOR_VERDE,    "VERDE"},
+  {0.4010f, 0.2723f, 0.3267f, COLOR_ROJO,     "ROJO"},
+  {0.4523f, 0.2632f, 0.2846f, COLOR_NARANJA,  "NARANJA"},
+  {0.3446f, 0.2997f, 0.3557f, COLOR_MORADO,   "MORADO"},
+};
+const int NUM_COLORS = sizeof(refs) / sizeof(refs[0]);
+
+// --------- Movimiento suave del disco (MG995) ---------
 void moverDiscoSuave(int destino) {
   int desde = anguloDiscoActual;
 
   if (desde < destino) {
     for (int pos = desde; pos <= destino; pos++) {
       servoDisco.write(pos);
-      delay(15);   // Ajusta si quieres más suave/lento
+      delay(15);   // más grande = más suave pero más lento
     }
   } else {
     for (int pos = desde; pos >= destino; pos--) {
@@ -61,27 +81,17 @@ void moverDiscoSuave(int destino) {
 
 // --------- Mover rampa según color detectado ---------
 void moverRampaPorColor(ColorDulce color) {
-  int anguloRampa = R_AMARILLO; // valor por defecto
+  int anguloRampa = R_AMARILLO; // por defecto
 
   switch (color) {
-    case COLOR_AMARILLO:
-      anguloRampa = R_AMARILLO;
-      break;
-    case COLOR_VERDE:
-      anguloRampa = R_VERDE;
-      break;
-    case COLOR_ROJO:
-      anguloRampa = R_ROJO;
-      break;
-    case COLOR_NARANJA:
-      anguloRampa = R_NARANJA;
-      break;
-    case COLOR_MORADO:
-      anguloRampa = R_MORADO;
-      break;
+    case COLOR_AMARILLO: anguloRampa = R_AMARILLO; break;
+    case COLOR_VERDE:    anguloRampa = R_VERDE;    break;
+    case COLOR_ROJO:     anguloRampa = R_ROJO;     break;
+    case COLOR_NARANJA:  anguloRampa = R_NARANJA;  break;
+    case COLOR_MORADO:   anguloRampa = R_MORADO;   break;
     case COLOR_DESCONOCIDO:
     default:
-      // Podrías mandar los desconocidos a alguna bandeja "basura"
+      // Podrías mandar desconocidos a una bandeja “basura”
       anguloRampa = R_AMARILLO;
       break;
   }
@@ -93,71 +103,68 @@ void moverRampaPorColor(ColorDulce color) {
 }
 
 // --------- Leer frecuencia de un "filtro" de color ---------
-// s2State y s3State seleccionan el filtro (rojo, verde, azul)
 unsigned long leerFrecuenciaColor(bool s2State, bool s3State) {
   digitalWrite(S2_PIN, s2State);
   digitalWrite(S3_PIN, s3State);
 
-  delay(100);  // dejar que se estabilice el filtro
+  delay(50);  // dejar estabilizar
 
-  // Medimos el tiempo de un pulso LOW (en microsegundos)
   unsigned long duracion = pulseIn(OUT_PIN, LOW, 250000); // timeout 250 ms
-
   if (duracion == 0) {
-    // Si no se leyó pulso (muy raro), devolvemos algo grande
     duracion = 250000;
   }
-
-  // La frecuencia es inversamente proporcional a la duración
-  // freq ≈ 1e6 / duracion, pero podemos usar duracion directamente
-  // para comparar entre colores si somos consistentes.
   unsigned long frecuencia = 1000000UL / duracion;
-
   return frecuencia;
 }
 
-// --------- Leer R, G, B del TCS3200 ---------
+// --------- Leer RGB en una sola medición ---------
 void leerRGB(unsigned long &r, unsigned long &g, unsigned long &b) {
-  // Según el datasheet / estándar:
-  // S2 S3
-  // L  L  -> rojo
-  // L  H  -> azul
-  // H  H  -> verde
-  // (H,L sería clear, que aquí no usamos)
+  // S2 S3:
+  // L L -> rojo
+  // L H -> azul
+  // H H -> verde
 
   // Rojo
   r = leerFrecuenciaColor(LOW, LOW);
 
-  // Azul
+  // Azul (B)
   unsigned long azul = leerFrecuenciaColor(LOW, HIGH);
 
   // Verde
   g = leerFrecuenciaColor(HIGH, HIGH);
 
-  // Guardamos azul en b
   b = azul;
 }
 
-// --------- Detectar color del dulce usando TCS3200 ---------
-ColorDulce detectarColor() {
-  unsigned long r, g, b;
-  leerRGB(r, g, b);
+// --------- Leer varias veces y hacer promedio normalizado ---------
+void leerRGBPromediado(float &rN, float &gN, float &bN, int muestras = 5) {
+  unsigned long sumR = 0, sumG = 0, sumB = 0;
 
-  // Debug: imprime valores crudos
-  Serial.print("Lectura RGB - R: ");
-  Serial.print(r);
+  for (int i = 0; i < muestras; i++) {
+    unsigned long R, G, B;
+    leerRGB(R, G, B);
+    sumR += R;
+    sumG += G;
+    sumB += B;
+  }
+
+  float Ravg = sumR / (float)muestras;
+  float Gavg = sumG / (float)muestras;
+  float Bavg = sumB / (float)muestras;
+
+  float sum = Ravg + Gavg + Bavg;
+  if (sum == 0) sum = 1.0;
+
+  rN = Ravg / sum;
+  gN = Gavg / sum;
+  bN = Bavg / sum;
+
+  Serial.print("RGB promedio - R: ");
+  Serial.print(Ravg);
   Serial.print("  G: ");
-  Serial.print(g);
+  Serial.print(Gavg);
   Serial.print("  B: ");
-  Serial.println(b);
-
-  // Normalización
-  float sum = (float)r + (float)g + (float)b;
-  if (sum == 0) sum = 1;
-
-  float rN = r / sum;
-  float gN = g / sum;
-  float bN = b / sum;
+  Serial.println(Bavg);
 
   Serial.print("Norm -> rN: ");
   Serial.print(rN, 3);
@@ -165,27 +172,13 @@ ColorDulce detectarColor() {
   Serial.print(gN, 3);
   Serial.print("  bN: ");
   Serial.println(bN, 3);
+}
 
-  // ---- Tabla de colores de referencia (centroides) ----
-  struct ColorRef {
-    float r;
-    float g;
-    float b;
-    ColorDulce color;
-  };
+// --------- Detectar color por "nearest centroid" ---------
+ColorDulce detectarColor() {
+  float rN, gN, bN;
+  leerRGBPromediado(rN, gN, bN, 5);  // 5 lecturas promediadas
 
-  ColorRef refs[] = {
-    //               r       g       b
-    {0.363, 0.315, 0.321, COLOR_AMARILLO},
-    {0.373, 0.295, 0.332, COLOR_NARANJA},
-    {0.348, 0.299, 0.353, COLOR_ROJO},
-    {0.329, 0.328, 0.343, COLOR_VERDE},
-    {0.335, 0.308, 0.356, COLOR_MORADO}
-  };
-
-  const int NUM_COLORS = sizeof(refs) / sizeof(refs[0]);
-
-  // ---- Buscar el color más cercano ----
   int bestIndex = 0;
   float bestDist = 999999.0;
 
@@ -193,7 +186,7 @@ ColorDulce detectarColor() {
     float dr = rN - refs[i].r;
     float dg = gN - refs[i].g;
     float db = bN - refs[i].b;
-    float dist = dr*dr + dg*dg + db*db;  // distancia al cuadrado (no hace falta sqrt)
+    float dist = dr * dr + dg * dg + db * db;
 
     if (dist < bestDist) {
       bestDist = dist;
@@ -202,75 +195,62 @@ ColorDulce detectarColor() {
   }
 
   ColorDulce result = refs[bestIndex].color;
-
-  Serial.print("Color elegido por distancia: ");
-  switch (result) {
-    case COLOR_AMARILLO: Serial.println("AMARILLO"); break;
-    case COLOR_VERDE:    Serial.println("VERDE"); break;
-    case COLOR_ROJO:     Serial.println("ROJO"); break;
-    case COLOR_NARANJA:  Serial.println("NARANJA"); break;
-    case COLOR_MORADO:   Serial.println("MORADO"); break;
-    default:             Serial.println("DESCONOCIDO"); break;
-  }
+  Serial.print("Color elegido (nearest centroid): ");
+  Serial.println(refs[bestIndex].name);
 
   return result;
 }
-
 
 // ----------------------------------------------------
 void setup() {
   Serial.begin(9600);
 
-  // Servos
   servoDisco.attach(pinServoDisco);
   servoRampa.attach(pinServoRampa);
 
-  // Posiciones iniciales
-  servoRampa.write(R_AMARILLO);          // Rampa a alguna bandeja inicial
+  servoRampa.write(R_AMARILLO);
   anguloDiscoActual = POS_DISCO_DESCARGA;
   servoDisco.write(anguloDiscoActual);
   delay(1000);
 
-  // TCS3200 pins
+  // TCS3200
   pinMode(S0_PIN, OUTPUT);
   pinMode(S1_PIN, OUTPUT);
   pinMode(S2_PIN, OUTPUT);
   pinMode(S3_PIN, OUTPUT);
   pinMode(OUT_PIN, INPUT);
 
-  // Escalado de frecuencia: S0 S1
-  // HIGH LOW -> 20% (recomendado para no saturar)
+  // Escala 20% (HIGH, LOW)
   digitalWrite(S0_PIN, HIGH);
   digitalWrite(S1_PIN, LOW);
 
-  Serial.println("Sistema de separacion de Skittles listo.");
+  Serial.println("Sistema de separacion de Skittles (sin IA, disco negro) listo.");
 }
 
 // ----------------------------------------------------
 void loop() {
-  // 1) Llevar disco a posición de recoger dulce (180°)
+  // 1) Disco a recoger
   moverDiscoSuave(POS_DISCO_RECOGER);
   Serial.println("Disco en POS_RECOGER (180°).");
-  delay(500);  // tiempo para que el dulce se acomode
+  delay(500);
 
-  // 2) Llevar disco a posición de sensor (90°)
+  // 2) Disco al sensor
   moverDiscoSuave(POS_DISCO_SENSOR);
   Serial.println("Disco en POS_SENSOR (90°). Leyendo color...");
-  delay(500);  // que se estabilice el dulce frente al sensor
+  delay(500);
 
-  // 3) Detectar el color del dulce con el TCS3200
+  // 3) Detectar color (en Arduino)
   ColorDulce color = detectarColor();
 
-  // 4) Mover la rampa al ángulo correcto
+  // 4) Mover rampa
   moverRampaPorColor(color);
-  delay(300);  // tiempo para que la rampa llegue a su posición
+  delay(300);
 
-  // 5) Llevar el disco a la posición de descarga (0°)
+  // 5) Disco a descarga
   moverDiscoSuave(POS_DISCO_DESCARGA);
   Serial.println("Disco en POS_DESCARGA (0°). Soltando dulce...");
-  delay(700);  // tiempo para que el dulce caiga y recorra la rampa
+  delay(700);
 
-  // 6) Pausa antes del siguiente ciclo
   Serial.println("----------------------------");
   delay(1000);
 }
