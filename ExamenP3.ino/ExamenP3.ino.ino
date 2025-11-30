@@ -10,7 +10,7 @@ const int pinBomba   = 9;      // Transistor 2N3904
 unsigned long tiempo10  = 500;    // ms para 10 ml
 unsigned long tiempo50  = 2400;   // ms para 50 ml
 unsigned long tiempo100 = 4800;   // ms para 100 ml
-unsigned long tiempo300 = 14000;  // ms para 300 ml
+unsigned long tiempo300 = 14000;  // ms para 300 ml (estímalo y luego calibra)
 
 // Estado
 bool vasoPresente = false;
@@ -26,8 +26,8 @@ void setup() {
   pinMode(pinBomba, OUTPUT);
   digitalWrite(pinBomba, LOW);
 
-  Serial.begin(9600);    
-  BT.begin(9600);        // Bluetooth HC-06
+  Serial.begin(9600);    // Debug por USB
+  BT.begin(9600);        // Bluetooth HC-06 (normalmente 9600)
 
   Serial.println("Sistema listo.");
 }
